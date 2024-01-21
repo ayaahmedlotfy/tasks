@@ -16,7 +16,7 @@ class UserRepository
 
     public function show($id)
     {
-        return User::findOrFail($id);
+        return User::find($id);
     }
     public function getByEmail($request)
     {

@@ -25,7 +25,10 @@ class UserServices
 
     public function show($id)
     {
-        return $this->userRepository->show($id);
+       $user= $this->userRepository->show($id);
+        if ($user)return $user;
+        return response()->json(['message' => 'User did not exist'], 402);
+
     }
 
     public function store($request)
@@ -38,41 +41,33 @@ class UserServices
     public function login($request)
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-                $user=$this->userRepository->getByEmail($request);
-                $token = $user->createToken('User')->accessToken;
                 $accessToken = Auth::user()->createToken('User')->accessToken;
-
-                $allData = [
-                    "id" => intval($user["id"]),
-                    "name" => $user["name"],
-                    "email" => $user["email"],
-                    "created_at" => $user["created_at"],
-                    "updated_at" => $user["updated_at"],
-                    'token' =>  $accessToken          
-                ];
-                $response = response()->json(['message'=>$allData],200);
-        } else { $response = response()->json(['message' => "wrong credintiels"], 404);
+                return response()->json(['message'=>[  'token' =>  $accessToken ]],200);
+        } else {return response()->json(['message' => "wrong credintiels"], 404);
         }
-        return $response;
     }
-
-
-
-
 
     public function update( $request, $id)
     {
      
         $user =  $this->userRepository->show($id);
-        $this->userRepository->update($request, $user);
-        return response()->json(['user' => $user, 'message' => 'User updated successfully']);
+        if ($user){  
+            $this->userRepository->update($request, $user);
+            return response()->json(['user' => $user, 'message' => 'User updated successfully']);
+        }else{
+            return response()->json(['message' => 'User did not exist'], 402);
+        }
     }
 
     public function destroy($id)
     {
         $user =  $this->userRepository->show($id);
-        $this->userRepository->destroy( $user);
-        return response()->json(['message' => 'User deleted successfully']);
+        if($user){
+            $this->userRepository->destroy( $user);
+            return response()->json(['message' => 'User deleted successfully']);
+        }else{
+            return response()->json(['message' => 'User did not exist'],402);
+        }
     }
 
 
